@@ -297,12 +297,11 @@ height: min(100vh, 133.33vw);
     /* Click layer (tap anywhere) */
     .tapLayer{
 		
-  pointer-events: none;
       position:absolute;
       inset:0;
       z-index:4;
-      pointer-events:auto;
       background: transparent;
+		pointer-events: none;
     }
 
     @media (max-width: 520px){
@@ -311,8 +310,17 @@ height: min(100vh, 133.33vw);
       .btn{ width: 100%; }
       .choices{ flex-direction:column; }
     }
-	  .modal{ display:none; }
-.modal.on{ display:flex; }
+.modal{
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.6);
+}
+
+.modal.on{
+  display: flex;
+}
   </style>
 </head>
 
@@ -370,10 +378,12 @@ height: min(100vh, 133.33vw);
           <button class="iconBtn" id="closeModal">關閉</button>
         </div>
        <iframe
-  id="difyFrame"
-  style="width: 100%; height: 100%; min-height: 700px;"
-  frameborder="0"
-  allow="microphone"
+
+ src="https://udify.app/chatbot/tkIf3U1WHcTRiI6Z"
+ style="width: 100%; height: 100%; min-height: 700px"
+ frameborder="0"
+ allow="microphone"
+
 ></iframe>
       </div>
     </div>
@@ -410,7 +420,7 @@ height: min(100vh, 133.33vw);
 
       { id: 12, bg:"assets/10.png", text:"醒來後，我覺得全身很痛，頭暈想吐。我才知道我被送到醫院了。", type:"normal" },
       { id: 13, bg:"assets/11.png",  text:"我的人生像是掉入深淵，所有規劃都按下暫停鍵，我不知道是否能回到正軌……", type:"normal" },
-      { id: 14, bg:"", speaker:"", text:"一年後", type:"intertitle" },
+      { id: 14, bg:"assets/0.png", speaker:"", text:"一年後", type:"intertitle" },
       { id: 15, bg:"assets/12.png", speaker:"老師", text:"好了，下週記得交分組名單，期中要完成選定主題的圖書閱讀報告唷！", type:"normal" },
       { id: 16, bg:"assets/13.png", speaker:"我", text:"那個……同學，你有分組了嗎？", type:"normal" },
       { id: 17, bg:"assets/13.png", speaker:"陳明飛", text:"……嗯？你在和我說話嗎？", type:"normal" },
@@ -474,12 +484,10 @@ height: min(100vh, 133.33vw);
 }
 
     function openDify(){
-      if(!DIFY_WEBAPP_URL || DIFY_WEBAPP_URL.includes("PASTE_")){
-        alert("https://udify.app/chat/tkIf3U1WHcTRiI6Z");
-        return;
-      }
-      difyFrame.src = DIFY_WEBAPP_URL;
-      modal.classList.add("on");
+		console.log("openDify 被呼叫了");
+     
+  difyFrame.src = "https://udify.app/chatbot/tkIf3U1WHcTRiI6Z";
+  modal.classList.add("on");
     }
 
     function closeDify(){
@@ -564,7 +572,7 @@ height: min(100vh, 133.33vw);
   setBg(s.bg);
   setDialogue(s);
   hintText.textContent = "點「開始討論」開啟對話";
-
+tapLayer.style.pointerEvents = "none";
   choices.style.display = "flex";
   choices.innerHTML = `<button class="btn" id="openDify">開始討論</button>`;
 
@@ -573,9 +581,7 @@ height: min(100vh, 133.33vw);
     e.preventDefault();
     e.stopPropagation();
 
-    // 1) 設定 iframe URL
-    difyFrame.src = "https://udify.app/chatbot/tkIf3U1WHcTRiI6Z";
-
+    
     // 2) 開啟 modal（確保你的 CSS 是 .modal.on 才會顯示）
     modal.classList.add("on");
 
@@ -634,7 +640,49 @@ console.log("start clicked");
       if(modal.classList.contains("on")) return; // allow inside iframe
       e.preventDefault();
     }, { passive:false });
+// ✅ 事件委派：不管 openDify 何時生成，都能接到點擊
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#openDify");
+  if (!btn) return;
 
+  e.preventDefault();
+  e.stopPropagation();
+
+  openDify(); // 這裡會呼叫你原本的 openDify() 函式
+});
   </script>
+	<script>
+ window.difyChatbotConfig = {
+  token: 'tkIf3U1WHcTRiI6Z',
+  inputs: {
+    // You can define the inputs from the Start node here
+    // key is the variable name
+    // e.g.
+    // name: "NAME"
+  },
+  systemVariables: {
+    // user_id: 'YOU CAN DEFINE USER ID HERE',
+    // conversation_id: 'YOU CAN DEFINE CONVERSATION ID HERE, IT MUST BE A VALID UUID',
+  },
+  userVariables: {
+    // avatar_url: 'YOU CAN DEFINE USER AVATAR URL HERE',
+    // name: 'YOU CAN DEFINE USER NAME HERE',
+  },
+ }
+</script>
+<script
+ src="https://udify.app/embed.min.js"
+ id="tkIf3U1WHcTRiI6Z"
+ defer>
+</script>
+<style>
+  #dify-chatbot-bubble-button {
+    background-color: #1C64F2 !important;
+  }
+  #dify-chatbot-bubble-window {
+    width: 24rem !important;
+    height: 40rem !important;
+  }
+</style>
 </body>
 </html>
