@@ -253,17 +253,17 @@ height: min(100vh, 133.33vw);
       z-index:20;
     }
     .modal.on{ display:flex; }
-    .modalCard{
-      width:min(980px, 100%);
-      height:min(82vh, 760px);
-      border-radius: 18px;
-      overflow:hidden;
-      background:#0b0d14;
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 18px 40px rgba(0,0,0,.45);
-      display:flex;
-      flex-direction:column;
-    }
+    ..modalCard{
+  width: min(980px, 100%);
+  height: 92dvh;           /* ✅ 提高 + 用 dvh */
+  border-radius: 18px;
+  overflow: hidden;
+  background:#0b0d14;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  display:flex;
+  flex-direction:column;
+}
     .modalTop{
       display:flex;
       align-items:center;
@@ -289,7 +289,7 @@ height: min(100vh, 133.33vw);
     }
     iframe{
       width:100%;
-      height:100%;
+      flex:1;
       border:0;
       background:#0b0d14;
     }
@@ -426,7 +426,7 @@ height: min(100vh, 133.33vw);
       { id: 17, bg:"assets/13.jpg", speaker:"陳明飛", text:"……嗯？你在和我說話嗎？", type:"normal" },
       { id: 18, bg:"assets/13.jpg", speaker:"我", text:"對啊！如果你沒有組別，要不要和我們一組？", type:"normal" },
       { id: 19, bg:"assets/13.jpg", speaker:"陳明飛", text:"隨便。", type:"normal" },
-      { id: 20, bg:"assets/13.jpg", speaker:"", text:"請與陳明飛對話完成課堂報告任務，在對話過程中觀察與了解他的心聲和處境吧！", type:"open_dify" },
+      { id: 20, bg:"assets/13.jpg", speaker:"", text:"請與陳明飛對話完成課堂報告任務，在對話過程中觀察與了解他的心聲和處境吧！你可以提問或是撰寫假設情境描述，盡可能收集明飛的反饋！", type:"open_dify" },
     ];
 
     // 狀態
