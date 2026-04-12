@@ -154,13 +154,15 @@
     }
 
     .dialogue-box {
-      width: 100%;
-      border-radius: var(--radius);
-      background: var(--panel);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      padding: clamp(16px, 2.8vw, 24px);
+       position: relative;
+  width: 100%;
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(10, 16, 30, 0.82) 0%, rgba(9, 14, 28, 0.92) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(12px);
+  padding: clamp(20px, 3vw, 30px);
+  min-height: clamp(150px, 22vh, 210px);
     }
 
     .speaker {
@@ -172,15 +174,17 @@
     }
 
     .dialogue-text {
-      font-size: clamp(18px, 2.3vw, 28px);
-      line-height: 1.7;
-      color: var(--text);
-      min-height: 4.2em;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+      font-size: clamp(12px, 2.15vw, 23px);
+  line-height: 1.75;
+  color: #f8fafc;
+  min-height: 4.8em;
+  max-width: calc(100% - 110px); /* ⭐ 留空給右上角badge */
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+  word-break: break-word;
     }
 
     .hint {
-      margin-top: 12px;
+      margin-top: 10px;
       font-size: clamp(12px, 1.4vw, 14px);
       color: var(--subtext);
       opacity: 0.85;
