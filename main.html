@@ -110,13 +110,13 @@
       text-align: center;
       padding: clamp(20px, 4vw, 36px);
       border-radius: 30px;
-      background: rgba(0, 0, 0, 0.18);
-      backdrop-filter: blur(4px);
+       background: transparent;
+  backdrop-filter: none;
     }
 
     .title-image {
-      width: min(88vw, 720px);
-      max-height: 26vh;
+     width: min(78vw, 520px);
+max-height: 18vh;
       object-fit: contain;
       filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.32));
     }
@@ -150,7 +150,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      padding: clamp(12px, 3vw, 28px);
+    padding: 0 0 clamp(14px, 2.2vw, 22px) 0;
     }
 
     .dialogue-box {
@@ -432,7 +432,7 @@
         <div class="story-ui">
           <div class="story-wrap">
             <div class="dialogue-box">
-              <div class="speaker">劇情</div>
+              <div class="speaker">我</div>
               <div class="dialogue-text" id="dialogueText"></div>
               <div class="hint" id="dialogueHint">點擊畫面繼續</div>
             </div>
