@@ -41,17 +41,25 @@
       position: relative;
       width: 100vw;
       height: 100dvh;
-      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+      overflow: hidden;
     }
 
     .scene {
-      position: absolute;
-      inset: 0;
+       position: relative;
+      width: min(100vw, calc(100dvh * 9 / 16));
+      height: min(100dvh, calc(100vw * 16 / 9));
+      aspect-ratio: 9 / 16;
       opacity: 0;
       pointer-events: none;
       transform: scale(1.015);
       transition: opacity 480ms ease, transform 480ms ease;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
     }
 
     .scene.active {
@@ -401,7 +409,7 @@
 
     <!-- Home -->
     <section class="scene active" id="homeScene" aria-label="首頁">
-      <img class="bg" src="0.jpg" alt="首頁背景" />
+      <img class="bg" src="assets/0.jpg" alt="首頁背景" />
       <div class="overlay"></div>
       <div class="home-content">
         <div class="home-panel">
@@ -431,7 +439,7 @@
 
     <!-- Choice -->
     <section class="scene" id="choiceScene" aria-label="角色選擇">
-      <img class="bg" src="12.jpg" alt="角色選擇背景" />
+      <img class="bg" src="assets/0.jpg" alt="角色選擇背景" />
       <div class="overlay"></div>
       <div class="choice-content">
         <div class="choice-panel">
@@ -439,14 +447,14 @@
           <div class="choice-subtitle">點選角色後，會開啟對應的 Dify 對話視窗，進一步訪談並擬定設計宣言。</div>
           <div class="choice-grid">
             <button class="choice-card" data-character="mingfei" aria-label="陳明飛，圖書館友善服務">
-              <img src="assets/12.jpg" alt="陳明飛" />
+              <img src="assets/13.jpg" alt="陳明飛" />
               <div class="choice-meta">
                 <div class="choice-name">陳明飛</div>
                 <div class="choice-role">圖書館友善服務</div>
               </div>
             </button>
             <button class="choice-card" data-character="yuki" aria-label="Yuki，國際化圖書服務">
-              <img src="assets/13.jpg" alt="Yuki" />
+              <img src="assets/14.jpg" alt="Yuki" />
               <div class="choice-meta">
                 <div class="choice-name">Yuki</div>
                 <div class="choice-role">國際化圖書服務</div>
