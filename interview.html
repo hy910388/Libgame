@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>需求訪談｜文字模擬遊戲</title>
+  <style>
+    :root {
+      --bg: #111827;
+      --panel: rgba(10, 16, 28, 0.78);
+      --panel-soft: rgba(255, 255, 255, 0.12);
+      --text: #f8fafc;
+      --subtext: #dbe4f0;
+      --accent: #f4d7a1;
+      --accent-2: #ffd98e;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+      --safe-w: min(100vw, 980px);
+      --safe-h: min(100dvh, 1600px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #0b1220;
+      color: var(--text);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      overflow: hidden;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: 0;
+    }
+
+    .app {
+      width: 100vw;
+      height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #020617;
+      overflow: hidden;
+    }
+
+    /* ⭐ 核心比例容器（固定畫面比例） */
+    .stage {
+      height: 100dvh;
+      max-height: 100dvh;
+      aspect-ratio: 3 / 4;
+      width: auto;
+      max-width: 100vw;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      background: #000;
+      border-radius: 24px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 400ms ease;
+    }
+
+    .scene.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: saturate(1.02);
+      transform: scale(1.02);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(0, 0, 0, 0.22) 40%, rgba(0, 0, 0, 0.58) 100%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.04) 45%, rgba(0, 0, 0, 0.15) 100%);
+    }
+
+    .home-content,
+    .story-content,
+    .choice-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(16px, 3vw, 32px);
+    }
+
+    .home-panel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(18px, 3vw, 28px);
+      text-align: center;
+      padding: clamp(20px, 4vw, 36px);
+      border-radius: 0;
+      background: transparent;
+      backdrop-filter: none;
+    }
+
+    .title-image {
+      width: min(78vw, 520px);
+      max-height: 18vh;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.18));
+    }
+
+    .start-btn {
+      padding: 14px 28px;
+      min-width: 180px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #f4d7a1, #f7c96d);
+      color: #2b1d0f;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      box-shadow: var(--shadow);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    .start-btn:hover,
+    .start-btn:focus-visible,
+    .choice-card:hover,
+    .choice-card:focus-visible,
+    .close-btn:hover,
+    .close-btn:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+      filter: brightness(1.03);
+    }
+
+    .story-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0 0 clamp(14px, 2.2vw, 22px) 0;
+    }
+
+    .dialogue-box {
+      position: relative;
+      width: 100%;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(10, 16, 30, 0.84) 0%, rgba(9, 14, 28, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(10px);
+      padding: clamp(22px, 3vw, 30px);
+      min-height: clamp(160px, 21vh, 220px);
+    }
+
+    .speaker {
+      font-size: clamp(14px, 1.4vw, 16px);
+      font-weight: 700;
+      color: #f0d59b;
+      margin-bottom: 14px;
+      letter-spacing: 0.04em;
+    }
+
+    .dialogue-text {
+      font-size: clamp(17px, 2vw, 22px);
+      line-height: 1.85;
+      color: #f8fafc;
+      min-height: 4.8em;
+      max-width: 100%;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+      word-break: break-word;
+      padding-right: 96px;
+    }
+
+    .hint {
+      position: absolute;
+      right: clamp(22px, 3vw, 30px);
+      bottom: clamp(18px, 2vw, 24px);
+      margin-top: 0;
+      font-size: clamp(12px, 1.2vw, 14px);
+      color: rgba(255, 255, 255, 0.76);
+      opacity: 0.95;
+      text-align: right;
+    }
+
+    .story-click-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      background: transparent;
+    }
+
+    .story-ui {
+      position: relative;
+      z-index: 4;
+      width: min(100%, 980px);
+      pointer-events: none;
+    }
+
+    .choice-panel {
+      width: min(96vw, 1100px);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: clamp(16px, 3vw, 28px);
+      border-radius: 30px;
+      background: rgba(8, 12, 24, 0.54);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+    }
+
+    .choice-title {
+      font-size: clamp(22px, 2.8vw, 34px);
+      font-weight: 800;
+      line-height: 1.45;
+      color: #fffaf2;
+    }
+
+    .choice-subtitle {
+      font-size: clamp(14px, 1.8vw, 18px);
+      color: var(--subtext);
+      line-height: 1.7;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(12px, 2vw, 20px);
+    }
+
+    .choice-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+      min-height: min(62vh, 640px);
+      padding: clamp(14px, 2vw, 20px);
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: var(--shadow);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+      text-align: left;
+    }
+
+    .choice-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 0;
+    }
+
+    .choice-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.12) 45%, rgba(0,0,0,0.78) 100%);
+      z-index: 1;
+    }
+
+    .choice-meta {
+      position: relative;
+      z-index: 2;
+    }
+
+    .choice-name {
+      font-size: clamp(22px, 2.5vw, 30px);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .choice-role {
+      font-size: clamp(14px, 1.8vw, 18px);
+      line-height: 1.6;
+      color: #e8edf5;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(10px, 2vw, 20px);
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-dialog {
+      width: min(100%, 1120px);
+      height: min(92dvh, 900px);
+      background: #0b1220;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .modal-title {
+      font-size: clamp(16px, 1.8vw, 20px);
+      font-weight: 800;
+    }
+
+    .close-btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    .iframe-wrap {
+      flex: 1;
+      min-height: 0;
+      background: #09111f;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #09111f;
+    }
+
+    .page-badge {
+      position: absolute;
+      right: clamp(18px, 2vw, 22px);
+      bottom: clamp(58px, 6vw, 72px);
+      min-width: 72px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+      font-size: clamp(13px, 1.2vw, 15px);
+      font-weight: 700;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .fade-flash {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      background: rgba(255, 255, 255, 0.14);
+      z-index: 30;
+      transition: opacity 220ms ease;
+    }
+
+    .fade-flash.show {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .home-panel {
+        padding: 20px 16px;
+      }
+
+      .title-image {
+        width: min(84vw, 460px);
+        max-height: 15vh;
+      }
+
+      .choice-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-card {
+        min-height: 40vh;
+      }
+
+      .dialogue-box {
+        min-height: 180px;
+        padding: 20px 20px 22px;
+      }
+
+      .dialogue-text {
+        max-width: 100%;
+        min-height: 5.6em;
+        padding-right: 0;
+      }
+
+      .page-badge {
+        right: 18px;
+        bottom: 64px;
+      }
+
+      .hint {
+        right: 20px;
+        bottom: 18px;
+      }
+    }
+
+      .choice-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-card {
+        min-height: 40vh;
+      }
+
+      .dialogue-text {
+        max-width: 100%;
+        min-height: 6em;
+      }
+
+      .hint {
+        position: static;
+        margin-top: 14px;
+      }
+    }
+
+      .choice-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .choice-card {
+        min-height: 40vh;
+      }
+
+      .dialogue-text {
+        min-height: 5.5em;
+      }
+
+      .hint {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .dialogue-box {
+        border-radius: 18px;
+        padding: 14px;
+      }
+
+      .start-btn {
+        width: 100%;
+        max-width: 260px;
+      }
+
+      .modal-dialog {
+        height: 94dvh;
+        border-radius: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="stage">
+    <div class="fade-flash" id="flash"></div>
+
+    <!-- Home -->
+    <section class="scene active" id="homeScene" aria-label="首頁">
+      <img class="bg" src="0.jpg" alt="首頁背景" />
+      <div class="overlay"></div>
+      <div class="home-content">
+        <div class="home-panel">
+          <img class="title-image" src="assets/tilteword.png" alt="義圖有你" />
+          <button class="start-btn" id="startBtn">需求訪談</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Story -->
+    <section class="scene" id="storyScene" aria-label="劇情對話">
+      <img class="bg" id="storyBg" src="assets/12.jpg" alt="劇情背景" />
+      <div class="overlay"></div>
+      <button class="story-click-layer" id="storyClick" aria-label="點擊切換下一段劇情"></button>
+      <div class="story-content">
+        <div class="story-ui">
+          <div class="story-wrap">
+            <div class="dialogue-box">
+              <div class="speaker">我</div>
+              <div class="page-badge" id="pageBadge">1 / 4</div>
+              <div class="dialogue-text" id="dialogueText"></div>
+              <div class="hint" id="dialogueHint">點擊畫面繼續</div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Choice -->
+    <section class="scene" id="choiceScene" aria-label="角色選擇">
+      <img class="bg" src="12.jpg" alt="角色選擇背景" />
+      <div class="overlay"></div>
+      <div class="choice-content">
+        <div class="choice-panel">
+          <div class="choice-title">請確認你的圖書館服務設計方向</div>
+          <div class="choice-subtitle">點選角色後，會開啟對應的 Dify 對話視窗，進一步訪談並擬定設計宣言。</div>
+          <div class="choice-grid">
+            <button class="choice-card" data-character="mingfei" aria-label="陳明飛，圖書館友善服務">
+              <img src="assets/13.jpg" alt="陳明飛" />
+              <div class="choice-meta">
+                <div class="choice-name">陳明飛</div>
+                <div class="choice-role">圖書館友善服務</div>
+              </div>
+            </button>
+            <button class="choice-card" data-character="yuki" aria-label="Yuki，國際化圖書服務">
+              <img src="assets/14.jpg" alt="Yuki" />
+              <div class="choice-meta">
+                <div class="choice-name">Yuki</div>
+                <div class="choice-role">國際化圖書服務</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal" id="chatModal" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div class="modal-title" id="modalTitle">需求訪談</div>
+          <button class="close-btn" id="closeModal">關閉</button>
+        </div>
+        <div class="iframe-wrap">
+          <iframe
+            id="difyFrame"
+            title="Dify 對話視窗"
+            src="about:blank"
+            allow="microphone"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenes = {
+      home: document.getElementById('homeScene'),
+      story: document.getElementById('storyScene'),
+      choice: document.getElementById('choiceScene')
+    };
+
+    const startBtn = document.getElementById('startBtn');
+    const storyBg = document.getElementById('storyBg');
+    const dialogueText = document.getElementById('dialogueText');
+    const dialogueHint = document.getElementById('dialogueHint');
+    const pageBadge = document.getElementById('pageBadge');
+    const storyClick = document.getElementById('storyClick');
+    const flash = document.getElementById('flash');
+
+    const chatModal = document.getElementById('chatModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const difyFrame = document.getElementById('difyFrame');
+    const closeModal = document.getElementById('closeModal');
+
+    const storyData = [
+      {
+        bg: 'assets/12.jpg',
+        text: '陳明飛看起來不好相處，但沒想到做報告還挺認真的。'
+      },
+      {
+        bg: 'assets/13.jpg',
+        text: '這次服務設計課程需要設計圖書館的服務，是否要找學長幫忙呢？'
+      },
+      {
+        bg: 'assets/14.jpg',
+        text: '我們學校也很多國際學生，或許找 Yuki 幫忙也可以？'
+      },
+      {
+        bg: 'assets/0.jpg',
+        text: '請思考目前所收集的資料，想一想你想設計的圖書館服務方向是什麼？與明飛或 Yuki 談話確認設計方向，擬定設計宣言吧！'
+      }
+    ];
+
+    // 請將下方網址替換成你的 Dify 分享連結
+    const difyLinks = {
+      mingfei: {
+        title: '陳明飛｜圖書館友善服務',
+        url: 'https://udify.app/chat/RFyFxRk1Oq0r1Pbw'
+      },
+      yuki: {
+        title: 'Yuki｜國際化圖書服務',
+        url: 'https://udify.app/chat/QqkIn3rZBaPxYKPi'
+      }
+    };
+
+    let storyIndex = 0;
+    let isTransitioning = false;
+
+    function showScene(target) {
+      Object.values(scenes).forEach(scene => scene.classList.remove('active'));
+      scenes[target].classList.add('active');
+    }
+
+    function flashTransition(callback) {
+      if (isTransitioning) return;
+      isTransitioning = true;
+      flash.classList.add('show');
+      window.setTimeout(() => {
+        callback();
+        flash.classList.remove('show');
+        window.setTimeout(() => {
+          isTransitioning = false;
+        }, 180);
+      }, 170);
+    }
+
+    function renderStory(index) {
+      const item = storyData[index];
+      storyBg.src = item.bg;
+      dialogueText.textContent = item.text;
+      pageBadge.textContent = `${index + 1} / ${storyData.length}`;
+      dialogueHint.textContent = index === storyData.length - 1 ? '點擊畫面進入角色選擇' : '點擊畫面任意處繼續';
+    }
+
+    function startStory() {
+      storyIndex = 0;
+      renderStory(storyIndex);
+      showScene('story');
+    }
+
+    function nextStory() {
+      if (isTransitioning) return;
+
+      if (storyIndex < storyData.length - 1) {
+        flashTransition(() => {
+          storyIndex += 1;
+          renderStory(storyIndex);
+        });
+      } else {
+        flashTransition(() => {
+          showScene('choice');
+        });
+      }
+    }
+
+    function openChat(characterKey) {
+      const config = difyLinks[characterKey];
+      if (!config) return;
+      modalTitle.textContent = config.title;
+      difyFrame.src = config.url;
+      chatModal.classList.add('show');
+      chatModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeChat() {
+      chatModal.classList.remove('show');
+      chatModal.setAttribute('aria-hidden', 'true');
+      difyFrame.src = 'about:blank';
+      document.body.style.overflow = '';
+    }
+
+    startBtn.addEventListener('click', startStory);
+    storyClick.addEventListener('click', nextStory);
+
+    document.querySelectorAll('.choice-card').forEach(card => {
+      card.addEventListener('click', () => {
+        openChat(card.dataset.character);
+      });
+    });
+
+    closeModal.addEventListener('click', closeChat);
+
+    chatModal.addEventListener('click', (event) => {
+      if (event.target === chatModal) closeChat();
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && chatModal.classList.contains('show')) {
+        closeChat();
+      }
+    });
+
+    renderStory(0);
+  </script>
+</body>
+</html>
